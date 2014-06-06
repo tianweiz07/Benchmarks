@@ -1,0 +1,35 @@
+Database Server Benchmark: Sysbench
+(http://www.howtoforge.com/how-to-benchmark-your-system-cpu-file-io-mysql-with-sysbench)
+
+Installation:
+
+1. Install Mysql server:
+	sudo aptitude update
+	sudo aptitude install mysql-server
+
+2. Launch Mysql:
+	sudo service mysql start
+
+3. Enter Mysql shell:
+	/usr/bin/mysql -u root -p
+
+4. Create database:
+	CREATE DATABASE demodb;
+
+5. Check database:
+	SHOW DATABASES;
+
+6. Quite Mysql shell:
+	quit
+
+7. Install Sysbench:
+	apt-get install sysbench
+
+8. Create table:
+	sysbench --test=oltp --oltp-table-size=1000000 --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword prepare
+
+9. Run test:
+	sysbench --test=oltp --oltp-table-size=1000000 --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword --max-time=60 --oltp-read-only=on --max-requests=0 --num-threads=128 run
+
+10. Clean up the table:
+	sysbench --test=oltp --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword cleanup
