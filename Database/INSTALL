@@ -1,4 +1,5 @@
 Database Server Benchmark: Sysbench
+
 (http://www.howtoforge.com/how-to-benchmark-your-system-cpu-file-io-mysql-with-sysbench)
 
 Installation:
@@ -7,29 +8,40 @@ Installation:
 	sudo aptitude update
 	sudo aptitude install mysql-server
 
-2. Launch Mysql:
-	sudo service mysql start
+2. Edit: /etc/mysql/my.conf
+	bind-address = 10.4.128.2
 
-3. Enter Mysql shell:
-	/usr/bin/mysql -u root -p
+3. Restart:
+	/etc/init.d/mysql restart
 
-4. Create database:
-	CREATE DATABASE demodb;
+4. Enter Mysql shell:
+	mysql -u root -p
 
-5. Check database:
+5. Create database:
+	CREATE DATABASE foo;
+ 	CREATE USER 'palms_admin'@'localhost' IDENTIFIED BY 'adminj310a'
+	GRANT ALL ON foo.* TO palms_admin@'10.4.128.4' IDENTIFIED BY 'adminj310a';
+
+6. Check database:
 	SHOW DATABASES;
 
-6. Quite Mysql shell:
+7. Quite Mysql shell:
 	quit
 
-7. Install Sysbench:
+8. Install Mysql client:
+	apt-get install mysql-client
+
+9. Test if is able to remote server database:
+	mysql -u palms_admin –h 10.4.128.2 –p
+
+10. Install Sysbench:
 	apt-get install sysbench
 
-8. Create table:
-	sysbench --test=oltp --oltp-table-size=1000000 --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword prepare
+11. Create table:
+	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table prepare
 
-9. Run test:
-	sysbench --test=oltp --oltp-table-size=1000000 --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword --max-time=60 --oltp-read-only=on --max-requests=0 --num-threads=128 run
+12. Run test:
+	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table --max-time=60 --oltp-read-only=on --max-requests=0 --num-threads=128 run
 
-10. Clean up the table:
-	sysbench --test=oltp --mysql-db=test --mysql-user=root --mysql-password=yourrootsqlpassword cleanup
+13. Clean up the table:
+	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a cleanup
