@@ -1,0 +1,8 @@
+FILE Server Benchmark: dbench
+
+1. Setup the NFS server and client:
+	https://www.digitalocean.com/community/articles/how-to-set-up-an-nfs-mount-on-ubuntu-12-04
+
+2. Install dbench in the client.
+	http://dbench.samba.org/
+	./dbench -B nfs --server=nsf_server_ip --export=/share/path --protocol=tcp -c ./loadfile/nsf.txt  -t 20 3 2>/dev/null
