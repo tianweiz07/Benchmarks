@@ -28,4 +28,37 @@ App Server Benchmark: tomcat + apachebench
 	sudo apt-get install apache2-utils
 
 8. Test in client:
-	./test.sh
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/HelloWorldExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/RequestInfoExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/RequestHeaderExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/RequestParamExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/CookieExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/servlets/servlet/SessionExample
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/el/basic-arithmetic.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/el/basic-comparisons.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/el/composite.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/hello.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/repeat.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/book.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/tagfiles/hello.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/tagfiles/panel.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspx/basic.jspx
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspx/svgexample.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspattribute/jspattribute.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspattribute/shuffle.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/misc/dynamicattrs.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/misc/config.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/num/numguess.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/dates/date.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/snp/snoop.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/error/error.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/sessions/carts.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/checkbox/check.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/colors/colors.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/cal/login.html
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/include/include.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/forward/forward.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/plugin/plugin.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsptoserv/jsptoservlet.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/simpletag/foo.jsp
+	ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/xml/xml.jsp
