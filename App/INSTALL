@@ -1,0 +1,31 @@
+App Server Benchmark: tomcat + apachebench
+
+1. Setup the apache server:
+	sudo apt-get install apache2
+
+2. Install java:
+	apt-get install openjdk-6-jdk
+	apt-cache search jdk
+	export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+	export PATH=$PATH:/usr/lib/jvm/java-6-openjdk-amd64/bin
+
+3. Install tomcat:
+	apt-get install tomcat7
+	apt-get install tomcat7-admin
+	apt-get install tomcat7-docs
+	apt-get install tomcat7-examples
+
+4. Install ant:
+	apt-get install ant
+
+5. Install cvs:
+	apt-get install cvs
+
+6. Restart tomcat:
+	/etc/init.d/tomcat7 restart
+
+7. Setup the apache client with apachebench:
+	sudo apt-get install apache2-utils
+
+8. Test in client:
+	./test.sh
