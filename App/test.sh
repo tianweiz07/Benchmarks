@@ -35,79 +35,79 @@ do
 		8)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/el/composite.jsp
 			;;
-		10)
+		9)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/hello.jsp
 			;;
-		11)
+		10)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/repeat.jsp
 			;;
-		12)
+		11)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/simpletag/book.jsp
 			;;
-		13)
+		12)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/tagfiles/hello.jsp
 			;;
-		14)
+		13)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/tagfiles/panel.jsp
 			;;
-		15)
+		14)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspx/basic.jspx
 			;;
-		16)
+		15)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspx/svgexample.html
 			;;
-		17)
+		16)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspattribute/jspattribute.jsp
 			;;
-		18)
+		17)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/jspattribute/shuffle.jsp
 			;;
-		19)
+		18)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/misc/dynamicattrs.jsp
 			;;
-		20)
+		19)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsp2/misc/config.jsp
 			;;
-		21)
+		20)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/num/numguess.jsp
 			;;
-		22)
+		21)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/dates/date.jsp
 			;;
-		23)
+		22)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/snp/snoop.jsp
 			;;
-		24)
+		23)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/error/error.html
 			;;
-		25)
+		24)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/sessions/carts.html
 			;;
-		26)
+		25)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/checkbox/check.html
 			;;
-		27)
+		26)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/colors/colors.html
 			;;
-		28)
+		27)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/cal/login.html
 			;;
-		29)
+		28)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/include/include.jsp
 			;;
-		30)
+		29)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/forward/forward.jsp
 			;;
-		31)
+		30)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/plugin/plugin.jsp
 			;;
-		32)
+		31)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/jsptoserv/jsptoservlet.jsp
 			;;
-		33)
+		32)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/simpletag/foo.jsp
 			;;
-		34)
+		33)
 			ab -n 1000 -c 10 http://10.4.128.2:8080/examples/jsp/xml/xml.jsp
 			;;
 		*)
