@@ -1,0 +1,22 @@
+Video Stream Server Benchmark: postfix + smtp-source
+
+1. Install the postfix in the server:
+	sudo apt-get install postfix
+
+2. Configure postfix in /etc/postfix/main.cf
+	add: resolve_numeric_domain = yes
+
+3. Reload postfix:
+	/etc/init.d/postfix reload
+
+4. Install the postfix in the client:
+	sudo apt-get install postfix
+
+5. Configure postfix in /etc/postfix/main.cf
+	add: resolve_numeric_domain = yes
+
+6. Reload postfix:
+	/etc/init.d/postfix reload
+
+7. Generate and mail from client to server:
+	smtp-source -s 20 -l 5120000 -m 200 -c -f root@10.4.128.4 -t root@10.4.128.2 10.4.128.2:25
