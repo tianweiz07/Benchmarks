@@ -5,11 +5,20 @@
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/delay.h>
-#include <asm/apic.h>
 #include <linux/jiffies.h>
+#include <linux/init.h>
+#include <linux/smp.h>
+#include <asm/apic.h>
+#include <asm/xen/events.h>
+#include <asm/xen/hypercall.h>
+#include <asm/xen/hypervisor.h>
+
+
 
 #define INTERVAL 180
 #define INTERVAL_CYCLE 100000
+#define IPI_ADDR 0xffffffff813af770
+
 
 #ifdef __i386
 __inline__ uint64_t rdtsc(void) {
@@ -26,7 +35,8 @@ __inline__ uint64_t rdtsc(void) {
 #endif
 
 #define SEND_CPUID 0
-#define RECV_CPUID 1
+#define RECV_CPUID 0
+void (*xen_send_IPI_one)(unsigned int cpu, enum ipi_vector vector) = IPI_ADDR;
 
 int cpu_ipi(void *ptr){
 	unsigned long next_time;
@@ -37,7 +47,10 @@ int cpu_ipi(void *ptr){
 
 	while (time_before(jiffies, next_time)) {
 		tsc = rdtsc() + INTERVAL_CYCLE;
-		apic->send_IPI_mask(get_cpu_mask(RECV_CPUID), CALL_FUNCTION_VECTOR);
+/* KVM invoke IPI */
+//		apic->send_IPI_mask(get_cpu_mask(RECV_CPUID), CALL_FUNCTION_VECTOR);
+/** Xen invoke IPI */
+		xen_send_IPI_one(RECV_CPUID, XEN_CALL_FUNCTION_VECTOR);
 		while (rdtsc() < tsc);
 	}
 	
