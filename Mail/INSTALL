@@ -2,6 +2,7 @@ Video Stream Server Benchmark: postfix + smtp-source
 
 1. Install the postfix in the server:
 	sudo apt-get install postfix
+	During the installation, select "Internet Site"
 
 2. Install the postfix in the client:
 	sudo apt-get install postfix
