@@ -19,7 +19,7 @@ Installation:
 
 5. Create database:
 	CREATE DATABASE foo;
- 	CREATE USER 'palms_admin'@'localhost' IDENTIFIED BY 'adminj310a'
+ 	CREATE USER 'palms_admin'@'localhost' IDENTIFIED BY 'adminj310a';
 	GRANT ALL ON foo.* TO palms_admin@'10.4.128.4' IDENTIFIED BY 'adminj310a';
 
 6. Check database:
