@@ -29,14 +29,14 @@ int main()
         AES_encrypt(text, enc_out, &enc_key);  
 //        AES_decrypt(enc_out, dec_out, &dec_key);
 
-        printf("original:\t");
-        for(i=0;i<16;i++)
-            printf("%X ",*(text+i));
+//        printf("original:\t");
+//        for(i=0;i<16;i++)
+//            printf("%X ",*(text+i));
 
-        printf("\nencrypted:\t");
-        for(i=0;i<16;i++)
-            printf("%X ",*(enc_out+i));
-        printf("\n");
+//        printf("\nencrypted:\t");
+//        for(i=0;i<16;i++)
+//            printf("%X ",*(enc_out+i));
+//        printf("\n");
 //        printf("\ndecrypted:\t");
 //        for(i=0;i<16;i++)
 //            printf("%X ",*(dec_out+i));
