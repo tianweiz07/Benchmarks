@@ -7,4 +7,4 @@ Web Server Benchmark: apache + apachebench
 	sudo apt-get install apache2-utils
 
 3. Test:
-	ab -n 2000000 -c 10 http://10.4.128.2:80/
+	ab -n 2000000 -c 10 http://server_address:80/
