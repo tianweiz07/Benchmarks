@@ -9,7 +9,7 @@ Installation:
 	sudo aptitude install mysql-server
 
 2. Edit: /etc/mysql/my.cnf
-	bind-address = 10.4.128.2
+	bind-address = server_address
 
 3. Restart:
 	/etc/init.d/mysql restart
@@ -20,7 +20,7 @@ Installation:
 5. Create database:
 	CREATE DATABASE foo;
  	CREATE USER 'palms_admin'@'localhost' IDENTIFIED BY 'adminj310a';
-	GRANT ALL ON foo.* TO palms_admin@'10.4.128.4' IDENTIFIED BY 'adminj310a';
+	GRANT ALL ON foo.* TO palms_admin@'client_address' IDENTIFIED BY 'adminj310a';
 
 6. Check database:
 	SHOW DATABASES;
@@ -32,16 +32,16 @@ Installation:
 	apt-get install mysql-client
 
 9. Test if is able to remote server database:
-	mysql -u palms_admin –h 10.4.128.2 –p
+	mysql -u palms_admin –h server_address –p
 
 10. Install Sysbench:
 	apt-get install sysbench
 
 11. Create table:
-	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table prepare
+	sysbench --test=oltp --mysql-host=server_address --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table prepare
 
 12. Run test:
-	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table --max-time=60 --oltp-read-only=on --max-requests=0 --num-threads=128 run
+	sysbench --test=oltp --mysql-host=server_address --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a --oltp-table-size=1000000 --oltp-table-name=test_table --max-time=60 --oltp-read-only=on --max-requests=0 --num-threads=128 run
 
 13. Clean up the table:
-	sysbench --test=oltp --mysql-host=10.4.128.2 --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a cleanup
+	sysbench --test=oltp --mysql-host=server_address --mysql-user=palms_admin --mysql-db=foo --mysql-password=adminj310a cleanup
