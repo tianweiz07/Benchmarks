@@ -30,4 +30,4 @@ FILE Server Benchmark: nfs + dbench
 
 5. Run dbench in the client.
 	
-	./dbench -B nfs --server=nsf_server_ip --export=/var/nfs --protocol=tcp -c ./loadfiles/nsf.txt  -t 20 3 2>/dev/null
+	./dbench -B nfs --server=nsf_server_ip --export=/var/nfs --protocol=tcp -c ./loadfiles/nfs.txt  -t 20 3 2>/dev/null
