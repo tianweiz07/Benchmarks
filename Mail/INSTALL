@@ -27,6 +27,6 @@ Video Stream Server Benchmark: postfix + smtp-source
 	receive mail in /var/mail/root in client
 
 8. Generate and mail from client to server:
-	smtp-source -s 20 -l 5120000 -m 1000 -c -f root@client_address -t root@server_address server_address:25
+	smtp-source -s 20 -l 5120000 -m 1000 -c -R 1 -f root@client_address -t root@server_address server_address:25
 
 
