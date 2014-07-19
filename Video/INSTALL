@@ -12,4 +12,4 @@ Video Stream Server Benchmark: ffserver + openRTSP
 	sudo apt-get install livemedia-utils
 
 5. Play the video:
-	openRTSP rtsp://10.4.128.2:7654/test2.mp3
+	openRTSP rtsp://server_address:7654/test2.mp3
