@@ -46,6 +46,7 @@
 # include <float.h>
 # include <limits.h>
 # include <sys/time.h>
+# include <stdlib.h>
 
 /*-----------------------------------------------------------------------
  * INSTRUCTIONS:
@@ -180,6 +181,8 @@ static STREAM_TYPE	a[STREAM_ARRAY_SIZE+OFFSET],
 			b[STREAM_ARRAY_SIZE+OFFSET],
 			c[STREAM_ARRAY_SIZE+OFFSET];
 
+static int 		index[STREAM_ARRAY_SIZE+OFFSET];
+
 static double	avgtime[4] = {0}, maxtime[4] = {0},
 		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
@@ -268,6 +271,8 @@ main()
 	    a[j] = 1.0;
 	    b[j] = 2.0;
 	    c[j] = 0.0;
+//            index[j] = j;
+	    index[j] = random()%STREAM_ARRAY_SIZE;
 	}
 
     printf(HLINE);
@@ -313,7 +318,7 @@ main()
 #else
 #pragma omp parallel for
 	for (j=0; j<STREAM_ARRAY_SIZE; j++)
-	    c[j] = a[j];
+	    c[index[j]] = a[index[j]];
 #endif
 	times[0][k] = mysecond() - times[0][k];
 	
@@ -323,7 +328,7 @@ main()
 #else
 #pragma omp parallel for
 	for (j=0; j<STREAM_ARRAY_SIZE; j++)
-	    b[j] = scalar*c[j];
+	    b[index[j]] = scalar*c[index[j]];
 #endif
 	times[1][k] = mysecond() - times[1][k];
 	
@@ -333,7 +338,7 @@ main()
 #else
 #pragma omp parallel for
 	for (j=0; j<STREAM_ARRAY_SIZE; j++)
-	    c[j] = a[j]+b[j];
+	    c[index[j]] = a[index[j]]+b[index[j]];
 #endif
 	times[2][k] = mysecond() - times[2][k];
 	
@@ -343,7 +348,7 @@ main()
 #else
 #pragma omp parallel for
 	for (j=0; j<STREAM_ARRAY_SIZE; j++)
-	    a[j] = b[j]+scalar*c[j];
+	    a[index[j]] = b[index[j]]+scalar*c[index[j]];
 #endif
 	times[3][k] = mysecond() - times[3][k];
 	}
