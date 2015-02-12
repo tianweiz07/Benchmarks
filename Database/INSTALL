@@ -32,7 +32,7 @@ Installation:
 	apt-get install mysql-client
 
 9. Test if is able to remote server database:
-	mysql -u palms_admin –h server_address –p
+	mysql -u palms_admin -h server_address -p
 
 10. Install Sysbench:
 	apt-get install sysbench
