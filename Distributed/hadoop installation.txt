@@ -1,0 +1,116 @@
+Hadoop System Installation
+
+
+Master(172.16.0.1)
+Slave(172.16.0.2)
+
+All nodes:
+
+  Install java:
+	sudo apt-get update
+	sudo apt-get install -y openjdk-6-jdk
+	sudo apt-cache search jdk
+
+  Configure ssh:
+	ssh-keygen -t rsa
+	copy .ssh/id_rsa.pub from source server to .ssh/authorized_keys in destination server
+
+  Download Hadoop:
+	wget http://mirrors.gigenet.com/apache/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+	tar –xvzf hadoop-1.2.1.tar.gz
+	mkdir ~/data/tmp
+
+  Append to ~/.bashrc:
+	export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+	export HADOOP_HOME=/home/palms_admin/hadoop-1.2.1
+	export PATH=$HADOOP_HOME/bin:$JAVA_HOME/bin:$PATH  
+
+	source ~/.bashrc
+
+  Modify conf/hadoop-env.sh:
+	export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+
+  Modify conf/core-site.xml:
+	<configuration>
+        	<property>
+                	<name>hadoop.tmp.dir</name>
+                	<value>/home/palms_admin/data/tmp</value>
+                	<description>A base for other temporary directories.</description>
+        	</property>
+        	<property>
+                	<name>fs.default.name</name>
+                	<value>hdfs://master_ip:54310</value>
+                	<description>The name of the default file system.  A URI whose scheme and authority determine the FileSystem implementation.  The uri's scheme determines the config property (fs.SCHEME.impl) naming the FileSystem implementation class.  The uri's authority is used to determine the host, port, etc. for a filesystem.</description>
+        	</property>
+	</configuration>
+	
+  Modify conf/mapred-site.xml:
+	<configuration>
+        	<property>
+                	<name>mapred.job.tracker</name>
+                	<value>master_ip:54311</value>
+                	<description>The host and port that the MapReduce job tracker runs at. If "local", then jobs are run in-process as a single map and reduce task.</description>
+        	</property>
+	</configuration>
+
+  Modify conf/hdfs-site.xml:
+	<configuration>
+        	<property>
+                	<name>dfs.replication</name>
+                	<value>1</value>
+                	<description>Default block replication.  The actual number of replications can be specified when the file is created. The default is used if replication is not specified in create time.</description>
+        	</property>
+	</configuration>
+
+On master node:
+
+  Modify conf/master:
+	master_ip
+
+  Modify conf/slave:
+	slave_ip
+
+  Format file system:
+	hadoop namenode -format
+
+  Start HDFS:
+	start-dfs.sh
+  
+  Start Map Red:
+	start-mapred.sh
+
+  Check:
+	http://master_ip:50070/: Namenode daemon
+	http://master_ip:50030/: JobTracker daemon
+	http://slave_ip:50060/: TaskTracker daemon
+	
+	or jps in each node.
+
+  Stop Map Red:
+	stop-mapred.sh
+
+  Stop HDFS:
+	stop-dfs.sh
+
+
+
+
+Hadoop benchmark:
+
+1. TestDFSIO:
+  hadoop jar hadoop-*test*.jar TestDFSIO -write -nrFiles 10 -fileSize 1000
+  hadoop jar hadoop-*test*.jar TestDFSIO -read -nrFiles 10 -fileSize 1000
+  hadoop jar hadoop-*test*.jar TestDFSIO -clean
+
+2. TeraSort:
+  hadoop jar hadoop-*examples*.jar teragen 10000000 /user/hduser/terasort-input
+  hadoop jar hadoop-*examples*.jar terasort -D mapred.map.tasks=10 -D mapred.reduce.tasks=10 /user/hduser/terasort-input /user/hduser/terasort-output
+  hadoop jar hadoop-*examples*.jar teravalidate -D mapred.map.tasks=10 -D mapred.reduce.tasks=10 /user/hduser/terasort-output /user/hduser/terasort-validate
+  hadoop dfs -rmr /user/hduser/*
+
+3. mrbench:
+  hadoop jar hadoop-*test*.jar mrbench -maps 20 -reduces 20 -numRuns 5
+
+4. nnbench
+  hadoop jar hadoop-*test*.jar nnbench -operation create_write -maps 2 -reduces 2 -blockSize 1 -bytesToWrite 0 -numberOfFiles 200 -replicationFactorPerFile 2 -readFileAfterOpen true -baseDir /benchmarks/NNBench-`hostname -s`
+  

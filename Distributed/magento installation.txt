@@ -1,0 +1,152 @@
+Magento System Installation
+
+
+Apache(172.16.0.1):
+
+  sudo apt-get update
+  sudo apt-get install apache2 -y
+  sudo bash -c "cat >> /etc/apache2/conf.d/servername.conf <<EOF
+ServerName localhost
+EOF"
+  sudo a2enmod rewrite
+  sudo service apache2 restart
+  sudo apt-get install php5 php5-curl php5-gd php5-mcrypt php5-mysql mysql-client -y
+  sudo php5enmod mcrypt
+  sudo usermod -a -G www-data palms_admin
+  mkdir /home/palms_admin/public_html
+  sudo chgrp www-data /home/palms_admin/public_html
+  sudo chmod 2750 /home/palms_admin/public_html
+  mkdir -p /home/palms_admin/public_html/magento-store.com/{public,log}
+ 
+  sudo bash -c "cat >> /etc/apache2/sites-available/magento-store.com <<EOF
+<VirtualHost *:80>
+
+  ServerName  localhost.magento-store.com
+  ServerAlias www.localhost.magento-store.com
+
+  DocumentRoot /home/palms_admin/public_html/magento-store.com/public
+
+  LogLevel warn
+  ErrorLog  /home/palms_admin/public_html/magento-store.com/log/error.log
+  CustomLog /home/palms_admin/public_html/magento-store.com/log/access.log combined
+
+</VirtualHost>
+EOF"
+
+  sudo a2ensite magento-store.com
+  sudo a2dissite 000-default
+  sudo service apache2 restart
+
+
+Database(172.16.0.2):
+
+  sudo apt-get install mysql-server -y
+  Edit: /etc/mysql/my.cnf:
+	bind-address = 172.16.0.2
+  sudo /etc/init.d/mysql restart
+
+  mysql -u root -p
+
+	CREATE DATABASE magento;
+	INSERT INTO mysql.user (User,Host,Password) VALUES(‘palms_admin’,’172.16.0.1’,PASSWORD(’adminj310a’));
+	FLUSH PRIVILEGES;
+	GRANT ALL PRIVILEGES ON magento.* TO palms_admin@172.16.0.1;
+	FLUSH PRIVILEGES;
+	exit
+
+Apache:
+
+  cd /home/palms_admin/public_html/magento-store.com/public
+  wget http://www.magentocommerce.com/downloads/assets/1.9.1.0/magento-1.9.1.0.tar.gz  
+  tar vxf magento-1.9.1.0.tar.gz
+  mv magento/* magento/.htaccess .
+  rm -rf magento-1.9.1.0.tar.gz magento
+
+  wget http://www.magentocommerce.com/downloads/assets/1.9.1.0/magento-sample-data-1.9.1.0.tar.gz
+  tar vxf magento-sample-data-1.9.1.0.tar.gz
+  rm -rf media/*
+  mv magento-sample-data-1.9.1.0/media/* media/
+  mv magento-sample-data-1.9.1.0/magento_sample_data_for_1.9.1.0.sql data.sql
+
+  mysql -u palms_admin -h 172.16.0.2 -p
+	USE magento;
+	SOURCE data.sql;
+	exit
+
+  rm -rf magento-sample-data-1.6.1.0.tar.gz magento-sample-data-1.6.1.0 data.sql
+
+  sudo chmod 777 -R /home/palms_admin/public_html/
+
+  use browser to go to 172.16.0.1 to run the Magento setup wizard.
+
+
+Memcached(172.16.0.3):
+  sudo apt-get install memcached php5-memcached -y
+  edit /etc/memcached.cnf
+	-l 0.0.0.0
+  sudo service memcached restart
+
+  check memcached is working:
+	ps -eaf | grep memcached
+
+  check:
+	sudo telnet localhost 11211
+
+Apache:
+  add in /home/palms_admin/public_html/magento-store.com/public/app/etc/local.xml:
+
+        <session_save><![CDATA[memcache]]></session_save>
+        <session_save_path><![CDATA[tcp://172.16.0.3:11211?persistent=0&weight=2&timeout=10&retry_interval=10]]></session_save_path>
+        <cache>
+            <backend>memcached</backend><!-- apc / memcached / xcache / empty=file -->
+            <prefix>MAGE1_</prefix>
+            <slow_backend>database</slow_backend> <!-- database / file (default) - used for 2 levels cache setup, necessary for all shared memory storages -->
+            <slow_backend_store_data></slow_backend_store_data> <!-- 1 / 0 (default) - used for 2 levels cache setup, sets whether store data in db slow cache backend -->
+            <auto_refresh_fast_cache>1</auto_refresh_fast_cache> <!-- 1 / 0 (default) - used for 2 levels cache setup, sets whether refresh data in fast cache backend -->
+            <memcached><!-- memcached cache backend related config -->
+                <servers><!-- any number of server nodes can be included -->
+                    <server>
+                        <host><![CDATA[172.16.0.3]]></host>
+                        <port><![CDATA[11211]]></port>
+                        <persistent><![CDATA[0]]></persistent>
+                    </server>
+                </servers>
+                <compression><![CDATA[0]]></compression>
+                <cache_dir><![CDATA[]]></cache_dir>
+                <hashed_directory_level><![CDATA[]]></hashed_directory_level>
+                <hashed_directory_umask><![CDATA[]]></hashed_directory_umask>
+                <file_name_prefix><![CDATA[]]></file_name_prefix>
+            </memcached>
+        </cache>	
+
+  sudo service apache2 restart
+
+  
+
+Pound:
+  sudo apt-get install pound
+  edit /etc/pound/pound.cfg:
+	ListenHTTP
+        	Address 0.0.0.0
+        	Port 80
+        	HeadRemove "X-Forwarded-For"
+		RewriteLocation 0
+
+        	Service
+                	BackEnd
+                        	Address 172.16.0.1
+                        	Port 80
+                        	Priority 1
+                	End
+                	BackEnd
+                        	Address 172.16.0.2
+                        	Port 80
+                        	Priority 1
+                	End
+        	End
+	End
+
+  edit /etc/default/pound:
+	startup=1
+
+  sudo /etc/init.d/pound start
