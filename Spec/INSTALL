@@ -27,8 +27,8 @@ vim test.cfg
 
 ######
 
-CC           = /usr/bin/gcc -m32
-CXX          = /usr/bin/g++ -m32
+CC           = /usr/bin/gcc
+CXX          = /usr/bin/g++
 #FC           = /usr/local/sles9/gcc42-0325/bin/gfortran
 
 #######
@@ -41,10 +41,12 @@ runspec --config=test.cfg --action=build --tune=base bzip2
 
 Run a benchmark(e.g. bzip2)
 
-runspec --config=test.cfg --size=test --noreportable --tune=base \ --iterations=1 bzip2
+runspec --config=test.cfg --size=test --noreportable --tune=base --iterations=1 bzip2
 or
-runspec --config=test.cfg --size=ref --noreportable --tune=base \ --iterations=1 bzip2
+runspec --config=test.cfg --size=ref --noreportable --tune=base --iterations=1 bzip2
 
+Other benchmarks: 
+perlbench, bzip2, gcc, mcf, milc, namd, gobmk, soplex, povray, hmmer, sjeng, libquantum, h264ref, lbm, omnetpp, astar
 
 Error of different Benchmark
 
