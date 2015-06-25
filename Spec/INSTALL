@@ -46,7 +46,7 @@ or
 runspec --config=test.cfg --size=ref --noreportable --tune=base --iterations=1 bzip2
 
 Other benchmarks: 
-perlbench, bzip2, gcc, mcf, milc, namd, gobmk, soplex, povray, hmmer, sjeng, libquantum, h264ref, lbm, omnetpp, astar
+perlbench bzip2 gcc mcf milc namd gobmk soplex povray hmmer sjeng libquantum h264ref lbm omnetpp astar
 
 Error of different Benchmark
 
