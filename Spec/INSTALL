@@ -3,7 +3,7 @@ SPEC benchmark CPU2006
 mkdir spec06 SpecCpu2006
 
 1.Mount:
-sudo mount -t iso9660 -o ro /home/ubuntu/CPU2006v1.0.1.iso /home/ubuntu/spec06/
+sudo mount -t iso9660 -o ro /home/palms_admin/CPU2006v1.0.1.iso /home/palms_admin/spec06/
 
 2.Installiation:
 
@@ -11,7 +11,7 @@ cd spec06
 
 ./install.sh
 
-/home/ubuntu/SpecCpu2006
+/home/palms_admin/SpecCpu2006
 
 cd ../SpecCpu2006
 
