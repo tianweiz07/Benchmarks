@@ -48,7 +48,7 @@ Database(172.16.0.2):
   mysql -u root -p
 
 	CREATE DATABASE magento;
-	INSERT INTO mysql.user (User,Host,Password) VALUES(‘palms_admin’,’172.16.0.1’,PASSWORD(’adminj310a’));
+	INSERT INTO mysql.user (User,Host,Password) VALUES('palms_admin','172.16.0.1',PASSWORD('adminj310a'));
 	FLUSH PRIVILEGES;
 	GRANT ALL PRIVILEGES ON magento.* TO palms_admin@172.16.0.1;
 	FLUSH PRIVILEGES;
