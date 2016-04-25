@@ -91,7 +91,16 @@ Memcached(172.16.0.3):
 
   check:
 	sudo telnet localhost 11211
-
+	
+  benchmarking memcached using memtier_benchmark:
+  	apt-get install build-essential autoconf automake libpcre3-dev libevent-dev pkg-config zlib1g-dev
+	git clone https://github.com/RedisLabs/memtier_benchmark.git
+	autoreconf -ivf
+	./configure
+	make
+	make install
+  Run:
+  	memtier_benchmark -s 192.168.1.28 -p 11211 -P memcache_binary --test-time 10
 Apache:
   add in /home/palms_admin/public_html/magento-store.com/public/app/etc/local.xml:
 
