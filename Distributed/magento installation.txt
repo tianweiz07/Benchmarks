@@ -10,8 +10,7 @@ ServerName localhost
 EOF"
   sudo a2enmod rewrite
   sudo service apache2 restart
-  sudo apt-get install php5 php5-curl php5-gd php5-mcrypt php5-mysql mysql-client -y
-  sudo php5enmod mcrypt
+  sudo apt-get install php5 php5-curl php5-gd php5-mcrypt php5-mysql php5-memcached mysql-client -y
   sudo usermod -a -G www-data palms_admin
   mkdir /home/palms_admin/public_html
   sudo chgrp www-data /home/palms_admin/public_html
