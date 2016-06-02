@@ -1,0 +1,79 @@
+Install Darwin Streaming Server:
+
+use gcc-4.4
+
+sudo addgroup --system qtss
+sudo adduser --system --no-create-home --ingroup qtss qtss
+
+cd DarwinStreamingSrvr6.0.3-Source
+
+./Buildit
+sudo ./Install
+goto http://server_ip:1220/ to set up the server
+If the web dose not work:
+	#/usr/bin/perl   /usr/local/sbin/streamingadminserver.pl
+
+Change configuration /etc/streaming/streamingserver.xml:
+	real_rtsp_timeout: 700
+	rtp_timeout: 700
+	maximum_connections: -1
+	maximum_bandwidth: -1
+	movie_folder: /usr/local/movies/
+	run_num_threads should be set to a value higher than the number of cores you want to utilize (e.g., 8 was enough to saturate 4 cores)
+	overbuffer_rate: 1.2
+		
+
+Play stream: use player to go to rtsp://servername/sample_100kbit.mp4
+
+Kill the program:
+	sudo killall -9 DarwinStreamingServer
+
+Run the program with statistics:
+	/usr/local/sbin/DarwinStreamingServer -dDS 1
+
+
+Generate dataset:
+cp -r streamingVideos_10 /usr/local/movies/streamingVideos_10
+cp -r streamingVideos_10 /usr/local/movies/streamingVideos_11
+cp -r streamingVideos_10 /usr/local/movies/streamingVideos_12
+......
+
+
+Install Client:
+
+sudo apt-get install -y openjdk-6-jdk ant
+sudo apt-cache search jdk
+
+Update PATH in .bashrc
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+rd faban-streaming
+./master/bin/startup.sh
+
+edit streaming/build.properties:
+	faban.home
+
+cd streaming
+sh scripts/new_deploy.sh
+
+cd curl
+mkdir curlinst
+./configure --prefix=curl/curlinst/ --enable-rtsp
+make
+sudo make install
+
+cd faban-streaming/streaming
+gcc rtspclientfinal.c -o rtspclient.o -I curl/curlinst/include -L curl/curlinst/lib/ -lcurl
+./rtspclient.o
+
+
+Run the benchmark:
+cd faban-streaming/streaming
+Edit scripts/run-test.sh:
+	replace all the /home/username/ to point to the path to faban-streaming
+Edit deploy/run.xml:
+	change ipAddress to server address
+	codeDirectory
+	outputDir
+
+sh scripts/run-test.sh

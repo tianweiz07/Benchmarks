@@ -1,0 +1,203 @@
+This requires two server nodes
+
+sudo apt-get install -y ant openjdk-6-jdk
+sudo apt-cache search jdk
+
+Edit ~/.bashrc:
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+export HADOOP_HOME=nutch-test/search
+export PATH=$HADOOP_HOME/bin:$JAVA_HOME/bin:$PATH
+
+source ~/.bashrc
+
+ssh-keygen -t rsa
+copy .ssh/id_rsa.pub from source server to .ssh/authorized_keys in destination server
+
+in each host, add other host's info into /etc/hosts:
+  		ip_address	hostname
+                127.0.1.1 -> real ip addresses
+
+mkdir nutch-test
+cd nutch-test
+mkdir dis_search/ search/ filesystem/ local/ home/ tomcat/ 
+
+cd apache-nutch-1.2
+Create build.properties:
+	dist.dir=nutch-test/search
+mkdir build
+
+ant package
+
+Edit nutch-test/search/conf/hadoop-env.sh:
+export HADOOP_HOME=nutch-test/search
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
+
+Edit nutch-test/search/conf/core-site.xml:
+<property>
+	<name>fs.default.name</name>
+	<value>hdfs://master_ip:9000</value>
+	<description>Where to find the Hadoop Filesystem through the network. Note 9000 is not the default port.</description>
+</property>
+
+Edit nutch-test/search/conf/hdfs-site.xml:
+<property>
+	<name>dfs.name.dir</name>
+	<value>nutch-test/filesystem/name</value>
+</property>
+<property>
+	<name>dfs.data.dir</name>
+	<value>nutch-test/filesystem/data</value>
+</property>
+<property>
+	<name>dfs.replication</name>
+	<value>1</value>
+</property>
+
+Edit nutch-test/search/conf/mapred-site.xml:
+<property>
+	<name>mapred.job.tracker</name>
+	<value>master_ip:9001</value>
+	<description> The host and port that the MapReduce job tracker runs at. If "local", then jobs are run in-process as a single map and reduce task. Note 9001 is not the default port. </description>
+</property>
+<property>
+	<name>mapred.map.tasks</name>
+	<value>4</value>
+	<description>define mapred.map tasks to be number of slave hosts</description>
+</property>
+<property>
+	<name>mapred.reduce.tasks</name>
+	<value>4</value>
+	<description>define mapred.reduce tasks to be number of slave hosts </description>
+</property>
+<property>
+	<name>mapred.system.dir</name>
+	<value>nutch-test/filesystem/mapreduce/system</value>
+</property>
+<property>
+	<name>mapred.local.dir</name>
+	<value>nutch-test/filesystem/mapreduce/local</value>
+</property>
+
+(master) Edit nutch-test/search/conf/slave:
+	add slave nodes
+
+
+Edit nutch-test/search/conf/crawl-urlfilter.txt:
+	+^http://([a-z0-9]*\.)*MY.DOMAIN.NAME/  -> +^http://([a-z0-9]*\.)*apache.org/
+
+(master+slave) Edit nutch-test/search/conf/nutch-site.xml:
+<property>
+	<name>http.agent.name</name>
+	<value>yourOrganization</value>
+	<description>HTTP 'User-Agent' request header. MUST NOT be empty - please set this to a single word uniquely related to your organization.</description>
+</property>
+
+(master):
+start-dfs.sh
+start-mapred.sh
+
+cd nutch-test/search
+mkdir urlsdir
+echo http://lucene.apache.org > urlsdir/urllist.txt
+./bin/hadoop dfs -put urlsdir urlsdir
+./bin/hadoop dfs -ls urlsdir
+
+start crawling: 
+./bin/nutch crawl urlsdir -dir crawl -depth 3
+./bin/hadoop dfs -copyToLocal crawl /home/username/nutch-test
+
+./bin/stop-all.sh
+
+(master+slave):
+Install Tomcat:
+mv apache-tomcat-7.0.23/* nutch-test/tomcat/
+cd nutch-test/tomcat/bin/
+tar zxvf commons-daemon-native.tar.gz
+cd commons-daemon-1.0.7-native-src/unix/
+./configure
+make
+cp jsvc nutch-test/tomcat/bin/
+cd nutch-test/tomcat
+bin/jsvc -cp ./bin/bootstrap.jar:./bin/tomcat-juli.jar -outfile ./logs/catalina.out -errfile ./logs/catalina.err org.apache.catalina.startup.bootstrap
+cd nutch-test/tomcat/webapps/ROOT/
+rm -rf *
+cp nutch-test/search/nutch-1.2.war ./
+jar -xvf nutch-1.2.war
+
+
+Edit nutch-test/tomcat/webapps/ROOT/WEB-INF/classes/nutch-site.xml
+<property>
+	<name>fs.default.name</name>
+	<value>local</value>
+</property>
+<property>
+	<name>searcher.dir</name>
+	<value>nutch-test</value>
+</property>
+<property>
+	<name>searcher.max.hits</name>
+	<value>-1</value>
+</property>
+<property>
+	<name>searcher.max.time.tick_count</name>
+	<value>-1</value>
+</property>
+<property>
+	<name>searcher.max.time.tick_length</name>
+	<value>30</value>
+</property>
+
+(master):
+Edit copy_index_and_segments.sh:
+	change server to slave
+./copy_index_and_segments.sh
+
+(master+slave):
+cp -r nutch-test/search/* nutch-test/dis_search/
+Create nutch-test/dis_search/conf/hadoop-site.xml:
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+<property>
+	<name>fs.default.name</name>
+	<value>local</value>
+</property>
+</configuration>
+
+Create nutch-test/search-servers.txt:
+master 8890
+slave 8891
+
+Start the index serving node:
+(master): nutch-test/dis_search/bin/nutch server 8890 nutch-test/local &
+(slave): nutch-test/dis_search/bin/nutch server 8891 nutch-test/local &
+
+(master): start the tomcat:
+nutch-test/tomcat/bin/startup.sh
+
+Verify:
+curl "http://master_ip:8080/search.jsp?query=apache"
+
+Setup client:
+faban/master/bin/start-up.sh
+
+Edit faban/search/build.properties:
+	change faban.home
+	ant.home
+
+cd faban/search
+ant deploy
+
+Edit faban/search/deploy/run.xml:
+	change <ipAddress>server1</ipaddress>
+	change <logFile>faban/queries.out</logFile>
+	change <termsFile>/path/to/input/terms/terms_en.out</termsFile> -> <termsFile>faban/src/sample/searchdriver/terms_en.out</termsFile>
+	change <outputDir>faban/output</outputDir>
+Run the benchmark:
+
+Edit faban/search/run.sh:
+	CLASSPATH
+sh. faban/search/run.sh
+
+Check results from faban/output/num_of_run/summary.xml

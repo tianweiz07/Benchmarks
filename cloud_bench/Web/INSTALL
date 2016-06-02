@@ -1,0 +1,10 @@
+Web Server Benchmark: apache + apachebench
+
+1. Setup the apache server:
+	sudo apt-get install apache2
+
+2. Setup the apache client with apachebench:
+	sudo apt-get install apache2-utils
+
+3. Test:
+	ab -n 2000000 -c 10 http://server_address:80/

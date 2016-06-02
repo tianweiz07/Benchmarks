@@ -1,0 +1,10 @@
+sudo apt-get install -y cmake libcr-dev mpich2 mpich2-doc
+
+cd PowerGraph
+./configure
+
+cd release/toolkits/graph_analytics 
+make tunkrank
+
+Run the benchmark:
+./tunkrank --powerlaw=5000000 --ncpus=1 --engine=asynchronous

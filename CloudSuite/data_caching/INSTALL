@@ -1,0 +1,26 @@
+On the server machine:
+cd libevent-2.0.21-stable
+./configure
+make
+sudo make install
+
+Run the server:
+memcached -t 4 -m 4096 -n 550
+
+cd memcached-1.4.15 
+./configure
+make
+sudo make install
+
+On the client machine:
+cd memcached_client
+make
+
+Edit server.txt:
+	server_ip, port
+
+warmup the server and generate the dataset:
+./loader -a ../twitter_dataset/twitter_dataset_unscaled -o ../twitter_dataset/twitter_dataset_30x -s servers.txt -w 1 -S 30 -D 4096 -j -T 1
+
+Run the benchmark:
+./loader -a ../twitter_dataset/twitter_dataset_30x -s servers.txt -g 0.8 -T 1 -c 200 -w 8

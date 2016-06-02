@@ -1,0 +1,55 @@
+sudo apt-get install -y ant openjdk-6-jdk libjna-java
+sudo apt-cache search jdk
+
+Edit ~/.bashrc:
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+source ~/.bashrc
+
+cd YCSB
+ant
+
+cd apache-cassandra-0.7.3
+cp lib/*.jar YCSB/db/cassandra-0.7/lib/
+
+cd YCSB
+ant
+ant dbcompile-cassandra-0.7
+
+cd apache-cassandra-0.7.3
+ln -s /usr/share/java/jna.jar lib/
+
+mkdir -p cassandra/data cassandra/commitlog cassandra/saved_caches
+
+Edit conf/cassandra.yaml:
+data_file_directories:
+    - apache-cassandra-0.7.3/cassandra/data
+
+commitlog_directory: apache-cassandra-0.7.3/cassandra/commitlog
+
+saved_caches_directory: apache-cassandra-0.7.3/cassandra/saved_caches
+
+Edit conf/log4j-server.properties:
+log4j.appender.R.File=apache-cassandra-0.7.3/cassandra/system.log
+
+Edit conf/cassandra-env.sh:
+	JVM_OPTS="$JVM_OPTS -Xss128k" -> JVM_OPTS="$JVM_OPTS -Xss256k"
+
+Run Cassandra:
+bin/cassandra -f
+
+Generate dataset:
+cd apache-cassandra-0.7.3
+./bin/cassandra-cli
+	connect localhost/9160;
+	create keyspace usertable with replication_factor=1;
+	use usertable;
+	create column family data with column_type = 'Standard' and comparator = 'UTF8Type';
+	exit;
+
+cd YCSB
+./run_load.command
+
+Run the benchmark:
+./run.command

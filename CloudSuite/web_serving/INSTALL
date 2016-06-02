@@ -1,0 +1,262 @@
+Three snervers: frontend, backend, and client
+
+for each server:
+	ssh-keygen –t rsa
+	copy id_rsa.pub to authorized_keys
+	ssh to other servers
+
+	Edit /etc/hosts:
+		127.0.1.1 -> real ip addresses
+
+	sudo apt-get install -y ant openjdk-6-jdk sysstat
+	sudo apt-cache search jdk
+
+	Edit ~/.bashrc:
+	export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+	export PATH=$JAVA_HOME/bin:$PATH
+	source ~/.bashrc
+
+Set up client:
+
+cd faban
+export JDK_HOME=$JAVA_HOME
+ant
+cp -r faban/stage web-release/faban
+
+Edit ~/.bashrc:
+export FABAN_HOME=web-release/faban
+export OLIO_HOME=web-release/apache-olio-php-src-0.2
+source ~/.bashrc
+
+cp mysql-connector-java-5.0.8/mysql-connector-java-5.0.8-bin.jar $OLIO_HOME/workload/php/trunk/lib
+
+cd $FABAN_HOME
+cp samples/services/ApacheHttpdService/build/ApacheHttpdService.jar services/
+cp samples/services/MysqlService/build/MySQLService.jar services/
+cp samples/services/MemcachedService/build/MemcachedService.jar services/
+
+cd $OLIO_HOME/workload/php/trunk
+cp build.properties.template build.properties
+Edit build.properties:
+	faban.home= 
+	faban.url=
+
+ant deploy.jar
+
+cp $OLIO_HOME/workload/php/trunk/build/OlioDriver.jar $FABAN_HOME/benchmarks
+$FABAN_HOME/master/bin/startup.sh
+
+Use browser to point to client_ip:9980
+
+scp -r faban to frontend and backend machines, with the same path
+
+
+Set up backend machine:
+
+sudo apt-get install libaio1
+sudo groupadd mysql
+sudo useradd -r -g mysql mysql
+
+sudo chown -R mysql mysql-5.5.20-linux2.6-x86_64
+sudo chgrp -R mysql mysql-5.5.20-linux2.6-x86_64
+
+cd mysql-5.5.20-linux2.6-x86_64
+sudo cp support-files/my-medium.cnf /etc/my.cnf
+sudo scripts/mysql_install_db --user=mysql
+
+sudo ./bin/mysqld_safe --defaults-file=/etc/my.cnf --user=mysql &
+
+sudo ./bin/mysql -uroot
+	create user 'olio'@'%' identified by 'olio';
+	grant all privileges on *.* to 'olio'@'localhost' identified by 'olio' with grant option;
+	grant all privileges on *.* to 'olio'@'ip.address.of.frontend' identified by 'olio' with grant option;
+	create database olio;
+	use olio;
+	\. $FABAN_HOME/benchmarks/OlioDriver/bin/schema.sql
+	exit
+
+cd $FABAN_HOME/benchmarks/OlioDriver/bin
+sudo chmod +x dbloader.sh
+./dbloader.sh localhost 25
+
+
+Edit ~/.bashrc:
+export CATALINA_HOME=web-release/apache-tomcat-6.0.35
+source ~/.bashrc
+
+cd $CATALINA/bin
+tar zxvf commons-daemon-native.tar.gz
+cd commons-daemon-1.0.7-native-src/unix/
+./configure
+make
+cp jsvc ../..
+
+
+scp -r IP.address.of.client_machine:apache-olio-php-src-0.2/geocoder web-release/apache-olio-php-src-0.2/
+
+
+Edit ~/.bashrc:
+export GEOCODER_HOME=web-release/apache-olio-php-src-0.2/geocoder
+source ~/.bashrc
+
+cd $GEOCODER_HOME
+
+cp build.properties.template build.properties
+
+Edit build.properties:
+	servlet.lib.path=$CATALINA_HOME/lib
+
+ant all
+cp dist/geocoder.war $CATALINA_HOME/webapps
+$CATALINA_HOME/bin/startup.sh
+
+
+
+
+Setup the frontend machine:
+sudo apt-get install -y libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlib1g-dev libxml2-dev curl libcurl3 libcurl3-dev libjpeg-dev libpng-dev autoconf
+
+Edit ~/.bashrc:
+export OLIO_HOME=web-release/apache-olio-php-src-0.2
+export APP_DIR=/var/www
+source ~/.bashrc
+
+sudo mkdir -p $APP_DIR
+sudo cp -r $OLIO_HOME/webapp/php/trunk/* $APP_DIR
+sudo cp cloudstone.patch $APP_DIR
+
+cd $APP_DIR 
+sudo patch -p1 < cloudstone.patch
+
+Edit $APP_DIR/etc/config.php:
+	$olioconfig['dbTarget'] = 'mysql:host=IP.address.of.backend;dbname=olio';
+	// $olioconfig['cacheSystem'] = 'MemCached'; 
+	$olioconfig['cacheSystem'] = 'NoCache';
+	$olioconfig['geocoderURL'] = 'http://IP.address.of.backend:8080/geocoder/geocode';
+
+cd nginx-1.0.11
+./configure
+make
+sudo make install
+
+test:
+	sudo /usr/local/nginx/sbin/nginx
+	Point your browser to: http://IP.address.of.frontend
+	sudo /usr/local/nginx/sbin/nginx -s stop
+
+Edit /usr/local/nginx/conf/nginx.conf:
+        location / {
+            root   $APP_DIR/public_html;
+            index  index.html index.htm index.php;
+        }
+
+        location ~ \.php$ {
+            root   $APP_DIR/public_html;
+            fastcgi_pass   127.0.0.1:9000;
+            fastcgi_index  index.php;
+            fastcgi_param  SCRIPT_FILENAME  $APP_DIR/public_html/$fastcgi_script_name;
+            include        fastcgi_params;
+        }
+        access_log   off;
+
+sudo /usr/local/nginx/sbin/nginx
+
+
+tar vxf mysql-5.5.20-linux2.6-x86_64
+cd php-5.3.9
+cp ~/php-5.4.5-libxm2-2.9.0.patch .
+sudo patch -p0 < php-5.4.5-libxm2-2.9.0.patch
+./configure --enable-fpm --with-curl --with-pdo-mysql=web-release/mysql-5.5.20-linux2.6-x86_64 --with-gd --with-jpeg-dir --with-png-dir --with-config-file-path=$APP_DIR/etc/
+make
+sudo make install
+
+Edit ~/.bashrc:
+export PHPRC=$APP_DIR/etc/
+source ~/.bashrc
+
+mkdir -p /tmp/http_sessions
+sudo chmod 777 /tmp/http_sessions
+
+Edit $APP_DIR/etc/php.ini:
+	extension_dir=/usr/local/lib/php/extensions/no-debug-non-zts-20090626/
+	date.timezone="Europe/Zurich"
+
+	error_reporting=E_NONE
+
+sudo cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
+sudo addgroup nobody
+sudo /usr/local/sbin/php-fpm
+
+cd APC-3.1.9
+phpize
+./configure --enable-apc --enable-apc-mmap --with-php-config=/usr/local/bin/php-config
+make
+sudo make install
+
+check if apc module is available:
+	php-fpm -m
+
+sudo killall -9 php-fpm
+sudo /usr/local/sbin/php-fpm
+
+
+cp loudsuite.patch $APP_DIR 
+cd $APP_DIR 
+patch -p1 < cloudsuite.patch
+
+Edit ~/.bashrc:
+export FILESTORE=/var/filestore
+export FABAN_HOME=web-release/faban
+source ~/.bashrc
+
+sudo mkdir -p $FILESTORE
+sudo chmod a+rwx $FILESTORE
+
+sudo chmod +x $FABAN_HOME/benchmarks/OlioDriver/bin/fileloader.sh
+$FABAN_HOME/benchmarks/OlioDriver/bin/fileloader.sh 102 $FILESTORE
+
+Edit $APP_DIR/etc/config.php:
+	$olioconfig['localfsRoot'] = '$FILESTORE';
+
+sudo killalludo dpkg --add-architecture i386-9 php-fpm
+sudo /usr/local/sbin/php-fpm
+
+
+sudo ln –s /usr/bin/awk /bin/awk
+sudo dpkg --add-architecture i386
+sudo apt-get install –y libc6:i386 libncurses5:i386 libstdc++6:i386
+
+
+
+Run the benchmark:
+Go to http://IP.address.of.client_machine:9980
+click Schedule Run
+Under Java:
+	Java Home: $JAVA_HOME 
+Under Drive:
+	Hosts: client ip address
+	Concurrent Users: 25
+	Tools: vmstat 10
+	Ramp Up: 60
+Under Web Server:
+	Host: frontend ip address:80
+	Type: empty
+	Web Server command path: empty
+	Tools: vmstat 10; mpstat 10; nicstat 10; iostat -x 10
+	Logs Directory: /usr/local/nginx/logs
+	Webserver Config File: /usr/local/nginx/conf/nginx.conf
+	Path to php.ini: $APP_DIR/etc/php.ini
+Under Data Servers:
+	In Database Servers:
+		Host: backend ip address
+		JDBC connection URL: replace dbHost with backend ip address
+		Reload Database: No
+		Load for Concurrent Users: 25
+	In Data Storage Server::
+		Host: frontend ip address
+		Media Directory: $FILESTORE
+	In Memcached Servers:
+		Host: empty
+
+Click OK to run
+Check results under View Results

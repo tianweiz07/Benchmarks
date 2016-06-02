@@ -1,0 +1,33 @@
+FILE Server Benchmark: nfs + dbench
+	https://www.digitalocean.com/community/articles/how-to-set-up-an-nfs-mount-on-ubuntu-12-04
+	http://dbench.samba.org/
+
+1. Setup the NFS server:
+	apt-get install nfs-kernel-server portmap
+	mkdir /var/nfs/
+	chown nobody:nogroup /var/nfs
+	modify /etc/exports:
+		/var/nfs        nfs_client_ip(rw,sync,no_subtree_check)
+	exportfs -a
+	
+2. Setup the NFS client:
+	apt-get install nfs-common portmap
+	mkdir -p /mnt/nfs/var/nfs
+	mount nfs_server_ip:/var/nfs /mnt/nfs/var/nfs
+
+3. Test NFS:
+	df -h
+	touch /mnt/nfs/var/nfs/example
+
+4. Install dbench in the client:
+	git clone git://git.samba.org/sahlberg/dbench.git dbench
+	apt-get install automake libpopt-dev zlib1g-dev
+	cd dbench
+	./autogen.sh
+	./configure
+	make
+	make install
+
+5. Run dbench in the client.
+	
+	./dbench -B nfs --server=nsf_server_ip --export=/var/nfs --protocol=tcp -c ./loadfiles/nfs.txt  -t 20 3 2>/dev/null

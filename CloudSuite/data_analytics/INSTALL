@@ -1,0 +1,91 @@
+sudo apt-get install -y openjdk-6-jdk maven
+sudo apt-cache search jdk
+
+ssh-keygen -t rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+ssh localhost
+
+Update PATH in .bashrc
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+export HADOOP_HOME=hadoop-0.20.2
+export PATH=$HADOOP_HOME/bin:$JAVA_HOME/bin:$PATH
+source .bashrc
+
+cd hadoop-0.20.2
+Edit conf/hadoop-env.sh:
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64
+
+mkdir -p data/tmp data/name data/data
+
+Edit conf/core-site.xml:
+<property> 
+	<name>fs.default.name</name>
+	<value>hdfs://localhost:54310</value> 
+	<description>The name of the default file system. A URI whose scheme and authority determine the FileSystem implementation. The uri's scheme determines the config property (fs.SCHEME.impl) naming the FileSystem implementation class. The uri's authority is used to determine the host, port, etc. for a filesystem.</description>
+</property>
+
+Edit conf/mapred-site.xml:
+<property>
+	<name>mapred.job.tracker</name>
+	<value>localhost:54311</value>
+	<description>The host and port that the MapReduce job tracker runs at. If "local", then jobs are run in-process as a single map and reduce task. </description>
+</property>
+
+Edit conf/hdfs-site.xml:
+<property> 
+	<name>dfs.replication</name>
+	<value>1</value>
+	<description>Default block replication. The actual number of replications can be specified when the file is created. The default is used if replication is not specified in create time. </description>
+</property>
+<property> 
+	<name>hadoop.tmp.dir</name>
+	<value>hadoop-0.20.2/data/tmp </value> 
+</property>
+<property> 
+	<name>dfs.name.dir</name>
+	<value>hadoop-0.20.2/data/name </value> 
+</property>
+<property> 
+	<name>dfs.data.dir</name> 
+	<value>hadoop-0.20.2/data/data </value> 
+</property>
+
+Format file system:
+./bin/hadoop namenode -format
+
+Start Hadoop:
+start-dfs.sh
+start-mapred.sh
+
+Stop Hadoop:
+.bin/stop-all.sh
+
+cd mahout-distribution-0.6
+mvn install -DskipTests
+
+Run Benchmarks:
+
+mkdir -p mahout-distribution-0.6/examples/temp
+copy datasets to mahout-distribution-0.6/examples/temp
+
+./bin/mahout wikipediaXMLSplitter -d ./examples/temp/enwiki-latest-pages-articles.xml -o wikipedia/chunks -c 64
+./bin/mahout wikipediaXMLSplitter -d ./examples/temp/enwiki-20100904-pages-articles1.xml -o wikipedia-training/chunks -c 64
+
+Verify the chunks are in the HDFS system:
+cd $HADOOP_PATH
+./bin/hadoop dfs -ls wikipedia/chunks
+./bin/hadoop dfs -ls wikipedia-training/chunks
+
+cp categories.txt $MAHOUT_HOME/examples/temp/
+$MAHOUT_HOME/bin/mahout wikipediaDataSetCreator -i wikipedia/chunks -o wikipediainput -c $MAHOUT_HOME/examples/temp/categories.txt
+$MAHOUT_HOME/bin/mahout wikipediaDataSetCreator -i wikipedia-training/chunks -o traininginput -c $MAHOUT_HOME/examples/temp/categories.txt
+
+Verify the folders are created:
+$HADOOP_HOME/bin/hadoop fs -ls wikipediainput
+$HADOOP_HOME/bin/hadoop fs -ls traininginput
+
+Build the model:
+$MAHOUT_HOME/bin/mahout trainclassifier -i traininginput -o wikipediamodel -mf 4 -ms 4
+
+Test the model:
+$MAHOUT_HOME/bin/mahout testclassifier -m wikipediamodel -d wikipediainput --method mapreduce

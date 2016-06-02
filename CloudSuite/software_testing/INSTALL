@@ -1,0 +1,29 @@
+sudo apt-get install -y dejagnu flex bison protobuf-compiler libprotobuf-dev libboost-thread-dev libboost-system-dev build-essential libcrypto++-dev python-argparse gcc-multilib g++-multilib
+
+Update PATH in .bashrc
+export PATH=llvm-gcc4.2-2.9-x86_64-linux/bin:$PATH
+source .bashrc
+
+cd llvm-2.9
+./configure --enable-optimized --enable-assertions
+make
+
+Update PATH in .bashrc
+export PATH=llvm-2.9/Release+Asserts/bin:llvm-gcc4.2-2.9-x86_64-linux/bin:$PATH
+source .bashrc
+
+cd klee-c9-uclibc
+./configure --with-llvm=llvm-2.9/
+Edit the file Rules.mak and change this: "LLVMTOOLDIR = $(LLVMROOTDIR)/Release/bin" to "LLVMTOOLDIR = $(LLVMROOTDIR)/Release+Asserts/bin".
+Edit the file Rules.mak.llvm change this: "LLVMTOOLDIR = $(LLVMROOTDIR)/Release/bin" to "LLVMTOOLDIR = $(LLVMROOTDIR)/Release+Asserts/bin".
+
+make
+
+cd cloud9
+./configure --with-llvm=llvm-2.9/ --with-uclibc=klee-c9-uclibc/ --enable-posix-runtime --enable-optimized
+make
+
+Run the benchmarks:
+
+cd cloud9/Release+Asserts/bin
+./c9-worker --stand-alone --posix-runtime --libc=uclibc -coverable-modules=cloud9/infra/coverable/coreutils.coverable cloud9/targets/src/printf.bc --sym-args 0 2 5
