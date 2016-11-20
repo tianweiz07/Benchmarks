@@ -1,22 +1,14 @@
-Cloud_Benchmark
+Benchmark
 ===============
 
-This is for cloud benchmark
+1. Cloudsuite
 
-1. Side_Channel: Cross-VM settings. One CPU keeps sending IPI to another CPU.
+2. Distributed: include Hadoop and Magento
 
-2. Database Server: SysBench
-  – Alternative: TPC-C IBM DB2(OTPL&DSS)
+3. SPEC: CPU SPEC2006
 
-3. Media Streaming: VideoLAN
-  – Alternative: Darwin Streaming Server
+4. PARSEC
 
-4. Web Server: Apache Benchmark Tool (ab)
-
-5. App Server: Faban benchmarking framework
-
-6. File Server: Dbench
-
-7. Mail Server: Postal/Rabid mail server benchmarks
+5. cloud_bench: simple cloud benchmarks.
 
 
