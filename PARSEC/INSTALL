@@ -1,0 +1,8 @@
+PARSEC benchmark:
+
+1. Build: 
+  # source env.sh
+  # parsecmgmt -a build -p [PACKAGE]
+
+2. Run:
+  # parsecmgmt -a run -p [PACKAGE] -i native
