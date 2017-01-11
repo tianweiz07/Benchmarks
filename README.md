@@ -5,10 +5,8 @@ Benchmark
 
 2. Distributed: include Hadoop and Magento
 
-3. SPEC: CPU SPEC2006
+3. CPU: SPEC2006 and PARSEC
 
-4. PARSEC
-
-5. cloud_bench: simple cloud benchmarks.
+4. PALMScloud: simple cloud benchmarks.
 
 
